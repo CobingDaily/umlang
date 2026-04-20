@@ -1,7 +1,6 @@
 #lang racket
 (module+ test (require rackunit))
 
-
 ;; An Expr represents an expression in umlang
 ;; It is one of:
 ;; - a (num Number) , representing a number
@@ -22,18 +21,17 @@
     [(num n) ... n ...]
     [(plus left right) ... (F left) ... (F right) ...]))
 
-
-;; calc : Expr -> Number
-;; Calculate the value of an expression
-(define (calc expr)
+;; expr->python : Expr -> String
+;; Compiles umlang expressions to String representing python script
+(define (expr->python expr)
   (match expr
-    [(num n) n]
-    [(plus left right) (+ (calc left) (calc right))]))
+    [(num n) (number->string n)]
+    [(plus left right)
+     (string-append
+       "(" (expr->python left) " + " (expr->python right) ")" )]))
 
 (module+ test
-  (check-equal? (calc (num 0)) 0)
-  (check-equal? (calc ten) 10)
-  (check-equal? (calc (plus (num 1) (num 0))) 1)
-  (check-equal? (calc (plus (num 0) (num 1))) 1)
-  (check-equal? (calc two-plus-ten) 12))
-
+  (check-equal? (expr->python (num 42)) "42")
+  (check-equal? (expr->python (num 3.14)) "3.14")
+  (check-equal? (expr->python (num -2)) "-2")
+  (check-equal? (expr->python two-plus-ten) "(2 + 10)"))
