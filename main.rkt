@@ -5,6 +5,7 @@
 ;; It is one of:
 ;; - a (num Number) , representing a number
 ;; - a (plus Expr Expr) , denotes the addition of two expressions
+;; - a (sub Expr Expr) , denotes the subtraction of right from left expression
 (struct num [n] #:transparent)
 (struct plus [left right] #:transparent)
 (struct sub  [left right] #:transparent)
@@ -13,6 +14,7 @@
 (define two (num 2))
 (define ten (num 10))
 (define two-plus-ten (plus two ten))
+(define two-minus-ten (sub two ten))
 
 ;; Template for Expr
 ;; F : Expr -> X
@@ -20,7 +22,8 @@
 #;(define (F expr)
   (match expr
     [(num n) ... n ...]
-    [(plus left right) ... (F left) ... (F right) ...]))
+    [(plus left right) ... (F left) ... (F right) ...]
+    [(sub  left right) ... (F left) ... (F right) ...]))
 
 ;; expr->python : Expr -> String
 ;; Compiles umlang expressions to String representing python script
@@ -38,5 +41,5 @@
   (check-equal? (expr->python (num 42)) "42")
   (check-equal? (expr->python (num 3.14)) "3.14")
   (check-equal? (expr->python (num -2)) "-2")
-  (check-equal? (expr->python (sub two ten)) "(2 - 10)")
+  (check-equal? (expr->python two-minus-ten) "(2 - 10)")
   (check-equal? (expr->python two-plus-ten) "(2 + 10)"))
