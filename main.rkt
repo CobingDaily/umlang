@@ -8,13 +8,13 @@
 ;; - a (plus Expr Expr) , denotes the addition of two expressions
 ;; - a (sub Expr Expr) , denotes the subtraction of right from left expression
 ;; - a (conditional Expr Expr Expr) , denotes if `c` then `t` else `e`
-;; ;; - a (id String) , denotes an identifier name, represented by String
 (struct num [n] #:transparent)
 (struct bool [b] #:transparent)
 (struct plus [left right] #:transparent)
 (struct sub  [left right] #:transparent)
+(struct mul  [left right] #:transparent)
+(struct div  [left right] #:transparent)
 (struct conditional [c t e] #:transparent)
-;; (struct id  [name] #:transparent)
 
 ;; Examples:
 (define two (num 2))
@@ -43,6 +43,10 @@
      (plus->python (expr->python left) (expr->python right))]
     [(sub left right)
      (sub->python (expr->python left) (expr->python right))]
+    [(mul left right)
+     (mul->python (expr->python left) (expr->python right))]
+    [(div left right)
+     (div->python (expr->python left) (expr->python right))]
     [(conditional c t e)
      (conditional->python
        (expr->python c) (expr->python t) (expr->python e))]))
@@ -54,13 +58,25 @@
   (string-append "(" left-expr " + " right-expr ")"))
 
 ;; Expr Expr -> String
-;; Helper function to compile umlang sub into Python.
+;; Compile umlang sub into Python.
 ;; Only called from expr->python.
 (define (sub->python left-expr right-expr)
   (string-append "(" left-expr " - " right-expr ")"))
 
+;; Expr Expr -> String
+;; Compile umlang mul into Python.
+;; Only called from expr->python.
+(define (mul->python left-expr right-expr)
+  (string-append "(" left-expr " * " right-expr ")"))
+
+;; Expr Expr -> String
+;; Compile umlang div into Python.
+;; Only called from expr->python.
+(define (div->python left-expr right-expr)
+  (string-append "(" left-expr " / " right-expr ")"))
+
 ;; Expr Expr Expr -> String
-;; Helper function to compile umlang conditional into Python.
+;; Compile umlang conditional into Python.
 ;; Only called from expr->python.
 (define (conditional->python c t e)
   (string-append "(" t " if " c " else " e ")"))
@@ -74,6 +90,8 @@
   (check-equal? (expr->python (bool #f)) "False")
   (check-equal? (expr->python two-minus-ten) "(2 - 10)")
   (check-equal? (expr->python two-plus-ten) "(2 + 10)")
+  (check-equal? (expr->python (mul (num 2) (num 2))) "(2 * 2)")
+  (check-equal? (expr->python (div (num 1) (num 2))) "(1 / 2)")
   (check-equal? (expr->python if-t-one-else-minusone) "(1 if True else -1)")
   (check-equal? (expr->python
                   (conditional (bool #f) (num 1) (num -1))) "(1 if False else -1)"))
